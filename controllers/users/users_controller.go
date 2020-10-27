@@ -7,6 +7,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
+
+	"github.com/go-chi/chi"
 )
 
 // every reqeust is handled by controller
@@ -24,7 +27,6 @@ func SearchUser() http.HandlerFunc {
 func CreateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		// user := &users.User{}
 		var user users.User
 		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 			restErr := errors.NewBadRequestError("invalid json body")
@@ -34,18 +36,36 @@ func CreateUser() http.HandlerFunc {
 		}
 
 		// pass the populated struct to the service funciton
+		fmt.Printf("\n5 %p", &user)
 		result, saveErr := services.CreateUser(user)
+		fmt.Printf("\n6 %p", result)
 		if saveErr != nil {
-			w.Write([]byte(fmt.Sprintf("%v %v", saveErr.Status, saveErr)))
+			w.WriteHeader(saveErr.Status)
+			jsonData, _ :=	json.Marshal(saveErr)
+			w.Write([]byte(jsonData))
+			return
 		}
-		fmt.Println(result)
+		fmt.Printf("\nresults %v ", result)
 	}
 }
 
 func GetUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNotImplemented)
-		w.Write([]byte("implement Me!"))
-		return
+		w.Header().Set("Content-Type", "application/json")
+		userID, userErr := strconv.ParseInt(chi.URLParam(r, "user_id"), 10, 64)
+		if userErr != nil {
+			err := errors.NewBadRequestError("invalid user id")
+			w.WriteHeader(err.Status)
+			w.Write([]byte(fmt.Sprintf("%v", err)))
+		}
+		result, saveErr := services.GetUser(userID)
+		if saveErr != nil {
+			w.WriteHeader(saveErr.Status)
+			jsonData, _ :=	json.Marshal(saveErr)
+			w.Write([]byte(jsonData))
+			return
+		}
+		fmt.Println(result)
 	}
 }
+
