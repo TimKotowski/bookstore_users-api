@@ -34,18 +34,16 @@ func CreateUser() http.HandlerFunc {
 			w.Write([]byte(fmt.Sprintf("%v", restErr)))
 			return
 		}
-
 		// pass the populated struct to the service funciton
-		fmt.Printf("\n5 %p", &user)
 		result, saveErr := services.CreateUser(user)
-		fmt.Printf("\n6 %p", result)
 		if saveErr != nil {
 			w.WriteHeader(saveErr.Status)
-			jsonData, _ :=	json.Marshal(saveErr)
+			jsonData, _ := json.Marshal(saveErr)
 			w.Write([]byte(jsonData))
 			return
 		}
-		fmt.Printf("\nresults %v ", result)
+		jsonResult, _ := json.Marshal(result)
+		w.Write(jsonResult)
 	}
 }
 
@@ -61,11 +59,10 @@ func GetUser() http.HandlerFunc {
 		result, saveErr := services.GetUser(userID)
 		if saveErr != nil {
 			w.WriteHeader(saveErr.Status)
-			jsonData, _ :=	json.Marshal(saveErr)
+			jsonData, _ := json.Marshal(saveErr)
 			w.Write([]byte(jsonData))
 			return
 		}
 		fmt.Println(result)
 	}
 }
-

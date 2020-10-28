@@ -2,7 +2,6 @@ package users
 
 import (
 	"bookstore_users-api/utils/errors"
-	"fmt"
 	"strings"
 )
 
@@ -19,7 +18,7 @@ type User struct {
 }
 
 func (user *User) Validate() *errors.RestErr {
-	fmt.Printf("\n2 %p", user)
+	// pointer revicer to allow the mothod to mutate the receiving struct
 	user.Email = strings.TrimSpace(strings.ToLower(user.Email))
 	if user.Email == "" {
 		return errors.NewBadRequestError("invalid email request")

@@ -1,8 +1,16 @@
 package users
 
 import (
+	"bookstore_users-api/datasources/mysql/users_db"
+	"bookstore_users-api/utils/date_utils"
 	"bookstore_users-api/utils/errors"
 	"fmt"
+	"strings"
+)
+
+const (
+	indexUniqueEmail = "email_UNIQUE"
+	queryInsertUser  = ("INSERT INTO users (first_name, last_name, email, date_created) VALUES(?, ?, ?, ?)")
 )
 
 // only databse goes in this file to interact with the database
@@ -10,40 +18,40 @@ import (
 // interact with the database
 // data access layer to our database
 
-var (
-	usersDB = make(map[int64]*User)
-)
-
-
 // get by ID primary key
-// 	// not going ot have udpated fields because the GET method is a copy
-// 	// so the methods need to be a pointer to make sure were modifying the actual object the memory postion of that user
+//  not going ot have udpated fields because the GET method is a copy
+//  so the methods need to be a pointer to make sure were modifying the actual object the memory postion of that user
 func (user *User) Get() *errors.RestErr {
-	result := usersDB[user.ID]
-	if result == nil {
-		return  errors.NewBadRequestError(fmt.Sprintf("user %d not found", user.ID))
+	if err := users_db.Client.Ping(); err != nil {
+		panic(err)
 	}
-
-	user.ID = result.ID
-	user.Firstname = result.Firstname
-	user.Lastname = result.Lastname
-	user.Email = result.Email
-	user.DateCreated = result.DateCreated
-
-	return  nil
+	return nil
 }
 
 // save this user in the database
 // not going to have udpated fields because the GET method is a copy
 // so the methods need to be a pointer to make sure were modifying the actual object the memory postion of that user
 func (user *User) Save() *errors.RestErr {
-	current := usersDB[user.ID]
-	if current != nil {
-		if current.Email == user.Email {
-			return errors.NewNotFoundError(fmt.Sprintf("email %s already registered", user.Email))
-		}
-		return errors.NewBadRequestError(fmt.Sprintf("user %d already exists", user.ID))
+	stmt, err := users_db.Client.Prepare(queryInsertUser)
+	if err != nil {
+		return errors.NewInternalServerError(err.Error())
 	}
-	 usersDB[user.ID] = user
-	 return nil
+	defer stmt.Close()
+
+	user.DateCreated = date_utils.GetNowString()
+	insertResult, err := stmt.Exec(user.Firstname, user.Lastname, user.Email, user.DateCreated)
+	if err != nil {
+		if strings.Contains(err.Error(), indexUniqueEmail) {
+			return errors.NewBadRequestError(fmt.Sprintf("email %s already exists", user.Email))
+		}
+		return errors.NewInternalServerError(fmt.Sprintf("error when trying to save user: %s", err.Error()))
+	}
+
+	userID, err := insertResult.LastInsertId()
+	if err != nil {
+		return errors.NewInternalServerError(fmt.Sprintf("error when trying to save user: %s", err.Error()))
+	}
+
+	user.ID = userID
+	return nil
 }
