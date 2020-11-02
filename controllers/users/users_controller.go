@@ -57,12 +57,22 @@ func GetUser() http.HandlerFunc {
 			w.Write([]byte(fmt.Sprintf("%v", err)))
 		}
 		result, saveErr := services.GetUser(userID)
+		fmt.Printf("\n1 %p", result)
 		if saveErr != nil {
 			w.WriteHeader(saveErr.Status)
 			jsonData, _ := json.Marshal(saveErr)
 			w.Write([]byte(jsonData))
 			return
 		}
-		fmt.Println(result)
+		jsonData, _ := json.Marshal(result)
+		w.Write(jsonData)
+	}
+}
+
+func UpdateUser() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
+
 	}
 }

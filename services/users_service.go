@@ -3,6 +3,7 @@ package services
 import (
 	"bookstore_users-api/domain/users"
 	"bookstore_users-api/utils/errors"
+	"fmt"
 )
 
 // entry business logic in services
@@ -26,11 +27,12 @@ func CreateUser(user users.User) (*users.User, *errors.RestErr) {
 }
 
 func GetUser(userID int64) (*users.User, *errors.RestErr) {
-	user := users.User{
-		ID: userID,
-	}
+	user := users.User{ID: userID}
+	fmt.Printf("\n2 %p", &user)
+
 	if err := user.Get(); err != nil {
 		return nil, err
 	}
+	fmt.Printf("\n3 %p", &user)
 	return &user, nil
 }
