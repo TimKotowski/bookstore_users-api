@@ -19,6 +19,9 @@ type User struct {
 
 func (user *User) Validate() *errors.RestErr {
 	// pointer revicer to allow the mothod to mutate the receiving struct
+	user.Firstname = strings.TrimSpace(strings.ToLower(user.Firstname))
+	user.Lastname = strings.TrimSpace(strings.ToLower(user.Lastname))
+
 	user.Email = strings.TrimSpace(strings.ToLower(user.Email))
 	if user.Email == "" {
 		return errors.NewBadRequestError("invalid email request")

@@ -57,7 +57,6 @@ func GetUser() http.HandlerFunc {
 			w.Write([]byte(fmt.Sprintf("%v", err)))
 		}
 		result, saveErr := services.GetUser(userID)
-		fmt.Printf("\n1 %p", result)
 		if saveErr != nil {
 			w.WriteHeader(saveErr.Status)
 			jsonData, _ := json.Marshal(saveErr)
@@ -72,7 +71,32 @@ func GetUser() http.HandlerFunc {
 func UpdateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
+		userID, userErr := strconv.ParseInt(chi.URLParam(r, "user_id"), 10, 64)
+		if userErr != nil {
+			err := errors.NewBadRequestError("invalid user id")
+			w.WriteHeader(err.Status)
+			w.Write([]byte(fmt.Sprintf("%v", err)))
+		}
 
+			var user users.User
+			if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+				restErr := errors.NewBadRequestError("invalid json")
+				w.WriteHeader(restErr.Status)
+				w.Write([]byte(fmt.Sprintf("%v", restErr)))
+				return
+			}
 
+			user.ID = userID
+			isPartial := r.Method == http.MethodPatch
+
+			result, saveErr := services.UpdateUser(isPartial, user)
+			if saveErr != nil {
+				 w.WriteHeader(saveErr.Status)
+				 jsonData, _ := json.Marshal(saveErr)
+				 w.Write(jsonData)
+				 return
+			}
+			jsonResult, _ := json.Marshal(result)
+			w.Write(jsonResult)
 	}
 }

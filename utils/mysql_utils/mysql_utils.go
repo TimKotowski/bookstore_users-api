@@ -24,7 +24,7 @@ func ParseError(err error) *errors.RestErr {
 	switch sqlErr.Number {
 		// 1062 is sqlError for duplicated key
 	case 1062:
-		return errors.NewBadRequestError( "invalid data")
+		return errors.NewBadRequestError("invalid data")
 	}
 	return errors.NewInternalServerError("error when processing request")
 }

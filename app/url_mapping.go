@@ -9,9 +9,10 @@ import (
 
 func mapUrls(router *chi.Mux) {
 	router.Get("/ping", ping.Ping())
-
-	router.Get("/users/{user_id}", users.GetUser())
 	router.Get("/users/search", users.SearchUser())
+
 	router.Post("/users", users.CreateUser())
+	router.Get("/users/{user_id}", users.GetUser())
 	router.Put("/users/{user_id}", users.UpdateUser())
+	router.Patch("/users/{user_id}", users.UpdateUser())
 }

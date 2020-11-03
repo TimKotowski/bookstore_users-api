@@ -10,8 +10,9 @@ import (
 const (
 	indexUniqueEmail = "email_UNIQUE"
 	errorNoRows      = "no rows in result set"
-	queryInsertUser  = ("INSERT INTO users (first_name, last_name, email, date_created) VALUES(?, ?, ?, ?)")
-	queryGetUser     = ("SELECT id, first_name, last_name, email, date_created FROM users WHERE id=?")
+	queryInsertUser  = "INSERT INTO users (first_name, last_name, email, date_created) VALUES(?, ?, ?, ?)"
+	queryGetUser     = "SELECT id, first_name, last_name, email, date_created FROM users WHERE id=?"
+	queryUpdateUser  = "UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?"
 )
 
 // only databse goes in this file to interact with the database
@@ -20,8 +21,6 @@ const (
 // data access layer to our database
 
 // get by ID primary key
-//  not going ot have udpated fields because the GET method is a copy
-//  so the methods need to be a pointer to make sure were modifying the actual object the memory postion of that user
 func (user *User) Get() *errors.RestErr {
 	stmt, err := users_db.Client.Prepare(queryGetUser)
 	if err != nil {
@@ -37,8 +36,6 @@ func (user *User) Get() *errors.RestErr {
 }
 
 // save this user in the database
-// not going to have udpated fields because the GET method is a copy
-// so the methods need to be a pointer to make sure were modifying the actual object the memory postion of that user
 func (user *User) Save() *errors.RestErr {
 	stmt, err := users_db.Client.Prepare(queryInsertUser)
 	if err != nil {
@@ -58,5 +55,19 @@ func (user *User) Save() *errors.RestErr {
 	}
 
 	user.ID = userID
+	return nil
+}
+
+func (user *User) Update() *errors.RestErr {
+	stmt, err := users_db.Client.Prepare(queryUpdateUser)
+	if err != nil {
+		return errors.NewInternalServerError(err.Error())
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(user.Firstname, user.Lastname, user.Email, user.ID)
+	if err != nil {
+		return mysql_utils.ParseError(err)
+	}
 	return nil
 }
