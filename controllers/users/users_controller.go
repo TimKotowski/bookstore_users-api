@@ -16,6 +16,14 @@ import (
 // entry point of application
 // prodive the funcitonaly or the endpoints to interact against the users api
 
+func getUserID(userIdParam string) (int64, *errors.RestErr) {
+	userID, userErr := strconv.ParseInt(userIdParam, 10, 64)
+	if userErr != nil {
+		return 0, errors.NewBadRequestError("user id should be a number")
+	}
+	return userID, nil
+}
+
 func SearchUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotImplemented)
@@ -50,11 +58,11 @@ func CreateUser() http.HandlerFunc {
 func GetUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		userID, userErr := strconv.ParseInt(chi.URLParam(r, "user_id"), 10, 64)
-		if userErr != nil {
-			err := errors.NewBadRequestError("invalid user id")
-			w.WriteHeader(err.Status)
-			w.Write([]byte(fmt.Sprintf("%v", err)))
+		userID, idErr := getUserID(chi.URLParam(r,"user_id"))
+		if idErr != nil {
+			w.WriteHeader(idErr.Status)
+			w.Write([]byte(fmt.Sprintf("%v", idErr)))
+			return
 		}
 		result, saveErr := services.GetUser(userID)
 		if saveErr != nil {
@@ -71,11 +79,11 @@ func GetUser() http.HandlerFunc {
 func UpdateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		userID, userErr := strconv.ParseInt(chi.URLParam(r, "user_id"), 10, 64)
-		if userErr != nil {
-			err := errors.NewBadRequestError("invalid user id")
-			w.WriteHeader(err.Status)
-			w.Write([]byte(fmt.Sprintf("%v", err)))
+		userID, idErr := getUserID(chi.URLParam(r,"user_id"))
+		if idErr != nil {
+			w.WriteHeader(idErr.Status)
+			w.Write([]byte(fmt.Sprintf("%v", idErr)))
+			return
 		}
 
 			var user users.User
@@ -98,5 +106,23 @@ func UpdateUser() http.HandlerFunc {
 			}
 			jsonResult, _ := json.Marshal(result)
 			w.Write(jsonResult)
+	}
+}
+
+func DeleteUser() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		userID, idErr := getUserID(chi.URLParam(r,"user_id"))
+		if idErr != nil {
+			w.WriteHeader(idErr.Status)
+			w.Write([]byte(fmt.Sprintf("%v", idErr)))
+			return
+		}
+		_, saveErr := services.DeleteUser(userID)
+		if saveErr != nil {
+			w.WriteHeader(saveErr.Status)
+			jsonErr, _ := json.Marshal(saveErr)
+			w.Write(jsonErr)
+		}
+		fmt.Println(userID)
 	}
 }

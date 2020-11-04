@@ -5,6 +5,7 @@ import (
 	"bookstore_users-api/utils/date_utils"
 	"bookstore_users-api/utils/errors"
 	"bookstore_users-api/utils/mysql_utils"
+	"fmt"
 )
 
 const (
@@ -13,6 +14,7 @@ const (
 	queryInsertUser  = "INSERT INTO users (first_name, last_name, email, date_created) VALUES(?, ?, ?, ?)"
 	queryGetUser     = "SELECT id, first_name, last_name, email, date_created FROM users WHERE id=?"
 	queryUpdateUser  = "UPDATE users SET first_name=?, last_name=?, email=? WHERE id=?"
+	queryDeleteUser  = "DELETE FROM users WHERE id=?"
 )
 
 // only databse goes in this file to interact with the database
@@ -69,5 +71,20 @@ func (user *User) Update() *errors.RestErr {
 	if err != nil {
 		return mysql_utils.ParseError(err)
 	}
+	return nil
+}
+
+func (user *User) Delete() *errors.RestErr {
+	stmt, err := users_db.Client.Prepare(queryDeleteUser)
+	if err != nil {
+		return errors.NewInternalServerError(err.Error())
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(user.ID)
+	if err !=nil {
+		return mysql_utils.ParseError(err)
+	}
+	fmt.Println("DELETED USER")
 	return nil
 }

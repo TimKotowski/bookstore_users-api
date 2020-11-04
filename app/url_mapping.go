@@ -15,4 +15,5 @@ func mapUrls(router *chi.Mux) {
 	router.Get("/users/{user_id}", users.GetUser())
 	router.Put("/users/{user_id}", users.UpdateUser())
 	router.Patch("/users/{user_id}", users.UpdateUser())
+	router.Delete("/users/{user_id}", users.DeleteUser())
 }
