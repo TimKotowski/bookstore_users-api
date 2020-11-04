@@ -58,7 +58,7 @@ func CreateUser() http.HandlerFunc {
 func GetUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		userID, idErr := getUserID(chi.URLParam(r,"user_id"))
+		userID, idErr := getUserID(chi.URLParam(r, "user_id"))
 		if idErr != nil {
 			w.WriteHeader(idErr.Status)
 			w.Write([]byte(fmt.Sprintf("%v", idErr)))
@@ -79,39 +79,39 @@ func GetUser() http.HandlerFunc {
 func UpdateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		userID, idErr := getUserID(chi.URLParam(r,"user_id"))
+		userID, idErr := getUserID(chi.URLParam(r, "user_id"))
 		if idErr != nil {
 			w.WriteHeader(idErr.Status)
 			w.Write([]byte(fmt.Sprintf("%v", idErr)))
 			return
 		}
 
-			var user users.User
-			if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-				restErr := errors.NewBadRequestError("invalid json")
-				w.WriteHeader(restErr.Status)
-				w.Write([]byte(fmt.Sprintf("%v", restErr)))
-				return
-			}
+		var user users.User
+		if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+			restErr := errors.NewBadRequestError("invalid json")
+			w.WriteHeader(restErr.Status)
+			w.Write([]byte(fmt.Sprintf("%v", restErr)))
+			return
+		}
 
-			user.ID = userID
-			isPartial := r.Method == http.MethodPatch
+		user.ID = userID
+		isPartial := r.Method == http.MethodPatch
 
-			result, saveErr := services.UpdateUser(isPartial, user)
-			if saveErr != nil {
-				 w.WriteHeader(saveErr.Status)
-				 jsonData, _ := json.Marshal(saveErr)
-				 w.Write(jsonData)
-				 return
-			}
-			jsonResult, _ := json.Marshal(result)
-			w.Write(jsonResult)
+		result, saveErr := services.UpdateUser(isPartial, user)
+		if saveErr != nil {
+			w.WriteHeader(saveErr.Status)
+			jsonData, _ := json.Marshal(saveErr)
+			w.Write(jsonData)
+			return
+		}
+		jsonResult, _ := json.Marshal(result)
+		w.Write(jsonResult)
 	}
 }
 
 func DeleteUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		userID, idErr := getUserID(chi.URLParam(r,"user_id"))
+		userID, idErr := getUserID(chi.URLParam(r, "user_id"))
 		if idErr != nil {
 			w.WriteHeader(idErr.Status)
 			w.Write([]byte(fmt.Sprintf("%v", idErr)))

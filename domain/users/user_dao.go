@@ -82,7 +82,7 @@ func (user *User) Delete() *errors.RestErr {
 	defer stmt.Close()
 
 	_, err = stmt.Exec(user.ID)
-	if err !=nil {
+	if err != nil {
 		return mysql_utils.ParseError(err)
 	}
 	fmt.Println("DELETED USER")

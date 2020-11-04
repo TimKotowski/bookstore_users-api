@@ -6,7 +6,6 @@ const (
 	apiDateLayout = "01-02-2006T15:04:05Z"
 )
 
-
 func GetNow() time.Time {
 	return time.Now().UTC()
 }

@@ -11,7 +11,6 @@ const (
 	errorNoRows = "no rows in result set"
 )
 
-
 func ParseError(err error) *errors.RestErr {
 	sqlErr, ok := err.(*mysql.MySQLError)
 	if !ok {
@@ -22,7 +21,7 @@ func ParseError(err error) *errors.RestErr {
 	}
 
 	switch sqlErr.Number {
-		// 1062 is sqlError for duplicated key
+	// 1062 is sqlError for duplicated key
 	case 1062:
 		return errors.NewBadRequestError("invalid data")
 	}
