@@ -6,6 +6,7 @@ import (
 	"bookstore_users-api/utils/errors"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -15,7 +16,6 @@ import (
 // every reqeust is handled by controller
 // entry point of application
 // prodive the funcitonaly or the endpoints to interact against the users api
-
 func getUserID(userIdParam string) (int64, *errors.RestErr) {
 	userID, userErr := strconv.ParseInt(userIdParam, 10, 64)
 	if userErr != nil {
@@ -24,13 +24,6 @@ func getUserID(userIdParam string) (int64, *errors.RestErr) {
 	return userID, nil
 }
 
-func SearchUser() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNotImplemented)
-		w.Write([]byte("implement Me!"))
-		return
-	}
-}
 
 func CreateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -47,6 +40,7 @@ func CreateUser() http.HandlerFunc {
 		if saveErr != nil {
 			w.WriteHeader(saveErr.Status)
 			jsonData, _ := json.Marshal(saveErr)
+			fmt.Println(string(jsonData))
 			w.Write([]byte(jsonData))
 			return
 		}
@@ -62,6 +56,7 @@ func GetUser() http.HandlerFunc {
 		if idErr != nil {
 			w.WriteHeader(idErr.Status)
 			w.Write([]byte(fmt.Sprintf("%v", idErr)))
+			log.Fatal(idErr)
 			return
 		}
 		result, saveErr := services.GetUser(userID)
@@ -69,8 +64,10 @@ func GetUser() http.HandlerFunc {
 			w.WriteHeader(saveErr.Status)
 			jsonData, _ := json.Marshal(saveErr)
 			w.Write([]byte(jsonData))
+			log.Fatal(jsonData)
 			return
 		}
+
 		jsonData, _ := json.Marshal(result)
 		w.Write(jsonData)
 	}
@@ -83,6 +80,7 @@ func UpdateUser() http.HandlerFunc {
 		if idErr != nil {
 			w.WriteHeader(idErr.Status)
 			w.Write([]byte(fmt.Sprintf("%v", idErr)))
+			fmt.Println(idErr)
 			return
 		}
 
@@ -91,6 +89,7 @@ func UpdateUser() http.HandlerFunc {
 			restErr := errors.NewBadRequestError("invalid json")
 			w.WriteHeader(restErr.Status)
 			w.Write([]byte(fmt.Sprintf("%v", restErr)))
+			log.Fatal(err)
 			return
 		}
 
@@ -100,8 +99,9 @@ func UpdateUser() http.HandlerFunc {
 		result, saveErr := services.UpdateUser(isPartial, user)
 		if saveErr != nil {
 			w.WriteHeader(saveErr.Status)
-			jsonData, _ := json.Marshal(saveErr)
-			w.Write(jsonData)
+			jsonErr, _ := json.Marshal(saveErr)
+			w.Write(jsonErr)
+			log.Fatal(jsonErr)
 			return
 		}
 		jsonResult, _ := json.Marshal(result)
@@ -111,10 +111,13 @@ func UpdateUser() http.HandlerFunc {
 
 func DeleteUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+
 		userID, idErr := getUserID(chi.URLParam(r, "user_id"))
 		if idErr != nil {
 			w.WriteHeader(idErr.Status)
 			w.Write([]byte(fmt.Sprintf("%v", idErr)))
+			log.Fatal(idErr)
 			return
 		}
 		_, saveErr := services.DeleteUser(userID)
@@ -122,7 +125,32 @@ func DeleteUser() http.HandlerFunc {
 			w.WriteHeader(saveErr.Status)
 			jsonErr, _ := json.Marshal(saveErr)
 			w.Write(jsonErr)
+			log.Fatal(jsonErr)
+			return
 		}
-		fmt.Println(userID)
+
+		m := map[string]string{"status": "deleted"}
+		jsonResult, _ := json.Marshal(m)
+		w.Write(jsonResult)
+	}
+}
+
+
+
+func Search() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		status := r.URL.Query().Get("status")
+
+		users, err := services.Search(status)
+		if err != nil {
+			w.WriteHeader(err.Status)
+			jsonErr, _ := json.Marshal(err)
+			w.Write(jsonErr)
+			log.Fatal(string(jsonErr))
+		}
+
+		jsonData, _ := json.Marshal(users)
+		w.Write(jsonData)
 	}
 }
