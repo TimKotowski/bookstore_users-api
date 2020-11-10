@@ -6,7 +6,6 @@ import (
 	"bookstore_users-api/utils/errors"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -36,14 +35,14 @@ func CreateUser() http.HandlerFunc {
 			return
 		}
 		// pass the populated struct to the service funciton
-		result, saveErr := services.CreateUser(user)
+		createdUser, saveErr := services.UserService.CreateUser(user)
 		if saveErr != nil {
 			w.WriteHeader(saveErr.Status)
 			jsonData, _ := json.Marshal(saveErr)
-			fmt.Println(string(jsonData))
 			w.Write([]byte(jsonData))
 			return
 		}
+		result := createdUser.Marshall(r.Header.Get("X-Public") == "true")
 		jsonResult, _ := json.Marshal(result)
 		w.Write(jsonResult)
 	}
@@ -56,20 +55,18 @@ func GetUser() http.HandlerFunc {
 		if idErr != nil {
 			w.WriteHeader(idErr.Status)
 			w.Write([]byte(fmt.Sprintf("%v", idErr)))
-			log.Fatal(idErr)
 			return
 		}
-		result, saveErr := services.GetUser(userID)
+		user, saveErr := services.UserService.GetUser(userID)
 		if saveErr != nil {
 			w.WriteHeader(saveErr.Status)
 			jsonData, _ := json.Marshal(saveErr)
 			w.Write([]byte(jsonData))
-			log.Fatal(jsonData)
 			return
 		}
-
-		jsonData, _ := json.Marshal(result)
-		w.Write(jsonData)
+		result := user.Marshall(r.Header.Get("X-Public") == "true")
+		jsonResult, _ := json.Marshal(result)
+		w.Write(jsonResult)
 	}
 }
 
@@ -80,7 +77,6 @@ func UpdateUser() http.HandlerFunc {
 		if idErr != nil {
 			w.WriteHeader(idErr.Status)
 			w.Write([]byte(fmt.Sprintf("%v", idErr)))
-			fmt.Println(idErr)
 			return
 		}
 
@@ -89,21 +85,21 @@ func UpdateUser() http.HandlerFunc {
 			restErr := errors.NewBadRequestError("invalid json")
 			w.WriteHeader(restErr.Status)
 			w.Write([]byte(fmt.Sprintf("%v", restErr)))
-			log.Fatal(err)
 			return
 		}
 
 		user.ID = userID
 		isPartial := r.Method == http.MethodPatch
 
-		result, saveErr := services.UpdateUser(isPartial, user)
+		updatedUser, saveErr := services.UserService.UpdateUser(isPartial, user)
 		if saveErr != nil {
 			w.WriteHeader(saveErr.Status)
 			jsonErr, _ := json.Marshal(saveErr)
 			w.Write(jsonErr)
-			log.Fatal(jsonErr)
 			return
 		}
+
+		result := updatedUser.Marshall(r.Header.Get("X-Public") == "true")
 		jsonResult, _ := json.Marshal(result)
 		w.Write(jsonResult)
 	}
@@ -117,15 +113,13 @@ func DeleteUser() http.HandlerFunc {
 		if idErr != nil {
 			w.WriteHeader(idErr.Status)
 			w.Write([]byte(fmt.Sprintf("%v", idErr)))
-			log.Fatal(idErr)
 			return
 		}
-		_, saveErr := services.DeleteUser(userID)
+		_, saveErr := services.UserService.DeleteUser(userID)
 		if saveErr != nil {
 			w.WriteHeader(saveErr.Status)
 			jsonErr, _ := json.Marshal(saveErr)
 			w.Write(jsonErr)
-			log.Fatal(jsonErr)
 			return
 		}
 
@@ -142,15 +136,15 @@ func Search() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		status := r.URL.Query().Get("status")
 
-		users, err := services.Search(status)
+		users, err := services.UserService.Search(status)
 		if err != nil {
 			w.WriteHeader(err.Status)
 			jsonErr, _ := json.Marshal(err)
 			w.Write(jsonErr)
-			log.Fatal(string(jsonErr))
 		}
 
-		jsonData, _ := json.Marshal(users)
-		w.Write(jsonData)
+		result := users.Marshall(r.Header.Get("X-Public") == "true")
+		jsonResult, _ := json.Marshal(result)
+		w.Write(jsonResult)
 	}
 }

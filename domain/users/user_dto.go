@@ -19,8 +19,10 @@ type User struct {
 	Email       string `json:"email"`
 	DateCreated string `json:"date_created"`
 	Status      string `json:"status"`
-	Password    string `json:"password"` // if we get a password field in the json do not take that json address of the json field
+	Password    string `json:"password"`
 }
+
+type Users []User
 
 func (user *User) Validate() *errors.RestErr {
 	// pointer revicer to allow the mothod to mutate the receiving struct

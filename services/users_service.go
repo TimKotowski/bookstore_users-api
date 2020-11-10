@@ -7,10 +7,24 @@ import (
 	"bookstore_users-api/utils/errors"
 )
 
-// entry business logic in services
+var (
+	//A variable of an interface type can hold a value of a type that implements the interface
+	UserService uersServiceInterface = &usersService{}
+)
 
+type uersServiceInterface interface {
+	CreateUser(users.User) (*users.User, *errors.RestErr)
+	GetUser(int64) (*users.User, *errors.RestErr)
+	UpdateUser(bool, users.User) (*users.User, *errors.RestErr)
+	DeleteUser(int64) (*users.User, *errors.RestErr)
+	Search(string) (users.Users, *errors.RestErr)
+}
+
+type usersService struct {}
+
+// entry business logic in services
 // functions to handle a get user rqeuest
-func CreateUser(user users.User) (*users.User, *errors.RestErr) {
+func (s *usersService) CreateUser(user users.User) (*users.User, *errors.RestErr) {
 	// Go automatically handles conversion between values and pointers for method calls
 	// so no need to do &user
 	if err := user.Validate(); err != nil {
@@ -25,7 +39,7 @@ func CreateUser(user users.User) (*users.User, *errors.RestErr) {
 	return &user, nil
 }
 
-func GetUser(userID int64) (*users.User, *errors.RestErr) {
+func (s *usersService)  GetUser(userID int64) (*users.User, *errors.RestErr) {
 	user := &users.User{ID: userID}
 
 	if err := user.Get(); err != nil {
@@ -34,8 +48,8 @@ func GetUser(userID int64) (*users.User, *errors.RestErr) {
 	return user, nil
 }
 
-func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) {
-	current, err := GetUser(user.ID)
+func (s *usersService)  UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) {
+	current, err := UserService.GetUser(user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +77,7 @@ func UpdateUser(isPartial bool, user users.User) (*users.User, *errors.RestErr) 
 	return current, nil
 }
 
-func DeleteUser(userID int64) (*users.User, *errors.RestErr) {
+func (s *usersService)  DeleteUser(userID int64) (*users.User, *errors.RestErr) {
 	user := &users.User{ID: userID}
 	if err := user.Delete(); err != nil {
 		return nil, err
@@ -71,7 +85,7 @@ func DeleteUser(userID int64) (*users.User, *errors.RestErr) {
 	return nil, nil
 }
 
-func Search(status string) ([]users.User, *errors.RestErr) {
+func (s *usersService)  Search(status string) (users.Users, *errors.RestErr) {
 		dao := &users.User{}
 		return dao.FindByStatus(status)
 }

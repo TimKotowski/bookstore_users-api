@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bookstore_users-api/logger"
 	"flag"
 	"fmt"
 	"net/http"
@@ -19,6 +20,7 @@ func StartApplication() {
 
 	router := chi.NewRouter()
 	mapUrls(router)
+	logger.Info("about to start the application...")
 	server := http.Server{
 		Addr:           listenAddr,
 		Handler:        router,
@@ -33,3 +35,4 @@ func StartApplication() {
 		panic(err)
 	}
 }
+
