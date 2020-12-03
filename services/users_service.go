@@ -9,16 +9,17 @@ import (
 
 var (
 	//A variable of an interface type can hold a value of a type that implements the interface
-	UserService uersServiceInterface = &usersService{}
+	// UserService uersServiceInterface = &usersService{}
+	 UserService usersService = usersService{}
 )
 
-type uersServiceInterface interface {
-	CreateUser(users.User) (*users.User, *errors.RestErr)
-	GetUser(int64) (*users.User, *errors.RestErr)
-	UpdateUser(bool, users.User) (*users.User, *errors.RestErr)
-	DeleteUser(int64) (*users.User, *errors.RestErr)
-	Search(string) (users.Users, *errors.RestErr)
-}
+// type uersServiceInterface interface {
+// 	CreateUser(users.User) (*users.User, *errors.RestErr)
+// 	GetUser(int64) (*users.User, *errors.RestErr)
+// 	UpdateUser(bool, users.User) (*users.User, *errors.RestErr)
+// 	DeleteUser(int64) (*users.User, *errors.RestErr)
+// 	Search(string) (users.Users, *errors.RestErr)
+// }
 
 type usersService struct {}
 
@@ -85,7 +86,7 @@ func (s *usersService)  DeleteUser(userID int64) (*users.User, *errors.RestErr) 
 	return nil, nil
 }
 
-func (s *usersService)  Search(status string) (users.Users, *errors.RestErr) {
+func (s *usersService) Search(status string) (users.Users, *errors.RestErr) {
 		dao := &users.User{}
 		return dao.FindByStatus(status)
 }

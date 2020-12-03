@@ -2,7 +2,6 @@ package users
 
 import (
 	"encoding/json"
-	"fmt"
 )
 
 type PublicUser struct {
@@ -24,7 +23,6 @@ func (users Users) Marshall(isPublic bool) []interface{} {
 		result := make([]interface{}, len(users))
 		for index, user := range users {
 			result[index] = user.Marshall(isPublic)
-			fmt.Println("index", index)
 		}
 		return result
 }

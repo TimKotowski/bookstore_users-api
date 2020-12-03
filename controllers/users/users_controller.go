@@ -23,7 +23,6 @@ func getUserID(userIdParam string) (int64, *errors.RestErr) {
 	return userID, nil
 }
 
-
 func CreateUser() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -42,7 +41,7 @@ func CreateUser() http.HandlerFunc {
 			w.Write([]byte(jsonData))
 			return
 		}
-		result := createdUser.Marshall(r.Header.Get("X-Public") == "true")
+		result := createdUser.Marshall(true)
 		jsonResult, _ := json.Marshal(result)
 		w.Write(jsonResult)
 	}
@@ -64,7 +63,7 @@ func GetUser() http.HandlerFunc {
 			w.Write([]byte(jsonData))
 			return
 		}
-		result := user.Marshall(r.Header.Get("X-Public") == "true")
+		result := user.Marshall(true)
 		jsonResult, _ := json.Marshal(result)
 		w.Write(jsonResult)
 	}
@@ -128,8 +127,6 @@ func DeleteUser() http.HandlerFunc {
 		w.Write(jsonResult)
 	}
 }
-
-
 
 func Search() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
